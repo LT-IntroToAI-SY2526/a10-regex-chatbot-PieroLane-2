@@ -104,6 +104,29 @@ def get_polar_radius(planet_name: str) -> str:
     return match.group("radius")
 
 
+def get_vbteam_captain(vbteam_captain: str) -> str:
+    """Gets the radius of the given planet
+
+    Args:
+        planet_name - name of the planet to get radius of
+
+    Returns:
+        radius of the given planet
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(vbteam_captain)))
+    print(infobox_text)
+    # TODO: fill this in
+    pattern = "Polar radius\n*(?P<radius>[\d.]+)"
+    error_text = "Page infobox has no team captain information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("team captain")
+
+
+# below are a set of actions. Each takes a list argument and returns a list of answers
+# according to the action and the argument. It is important that each function returns a
+# list of the answer(s) and not just the answer itself.
+
+
 def get_birth_date(name: str) -> str:
     """Gets birth date of the given person
 
@@ -123,23 +146,6 @@ def get_birth_date(name: str) -> str:
     return match.group("birth")
 
 
-# below are a set of actions. Each takes a list argument and returns a list of answers
-# according to the action and the argument. It is important that each function returns a
-# list of the answer(s) and not just the answer itself.
-
-
-def birth_date(matches: List[str]) -> List[str]:
-    """Returns birth date of named person in matches
-
-    Args:
-        matches - match from pattern of person's name to find birth date of
-
-    Returns:
-        birth date of named person
-    """
-    return [get_birth_date(" ".join(matches))]
-
-
 def polar_radius(matches: List[str]) -> List[str]:
     """Returns polar radius of planet in matches
 
@@ -150,6 +156,22 @@ def polar_radius(matches: List[str]) -> List[str]:
         polar radius of planet
     """
     return [get_polar_radius(matches[0])]
+
+def vbteam_captain(matches: List[str]) -> List[str]:
+
+
+
+    
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(vbteam_captain)))
+    # TODO: fill this in
+    pattern = "(?P<birth>\d{4}-\d{2}-\d{2})"
+    error_text = (
+        "Page infobox has no birth information (at least none in xxxx-xx-xx format)"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("birth")
+
+
 
 
 # dummy argument is ignored and doesn't matter
