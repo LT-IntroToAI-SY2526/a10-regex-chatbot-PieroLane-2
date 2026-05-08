@@ -7,6 +7,16 @@ from typing import List, Callable, Tuple, Any, Match
 
 
 def get_page_html(title: str) -> str:
+    search_response = requests.get(
+        "https://en.wikipedia.org/w/api.php",
+        params={"action": "query", "list": "search", "srsearch": title, "format": "json"},
+        headers={"User-Agent": "intro-ai-class-per4/1.0"},
+        timeout=10
+    )
+    results = search_response.json().get("query", {}).get("search", [])
+    if results:
+        title = results[0]["title"]  # use the top search result title
+    
     for attempt in range(5):
         response = requests.get(
             "https://en.wikipedia.org/w/api.php",
@@ -114,7 +124,7 @@ def get_birth_date(name: str) -> str:
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
     # print(infobox_text)
-    pattern = r"(?:Born|Date of birth.*)(?P<birth>\d{4}-\d{2}-\d{2})"
+    pattern = r"(?:Captain\w+ \w\w\w\w\w\w\w\w\w)"
     error_text = (
         "Page infobox has no birth information (at least none in xxxx-xx-xx format)"
     )
@@ -123,17 +133,23 @@ def get_birth_date(name: str) -> str:
     return match.group("birth")
 
 
-def get_extract_infobox_captain(wiki_text):
+def get_extract_infobox_captain(wiki_text: str):
     """
-    Extracts the volleyball team captain's name from a Wikipedia infobox.
+    Extracts the volleyball team captain's name from Wikipedia.
     Matches fields like:
       | captain        = Name
       | team_captain   = Name
       | captain(s)     = Name
     """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(wiki_text)))
+    print(infobox_text)
     pattern = r"\|\s*captain(?:\(s\))?|team_captain\s*=\s*([^\n|]+)"
-    match = re.search(r"\|\s*(?:team_captain|captain(?:\(s\))?)\s*=\s*([^\n|]+)", wiki_text, re.IGNORECASE)
-    return match.group(1).strip() if match else None
+    error_text = (
+        "Page infobox has no captain information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("name")
+    
 
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
@@ -167,9 +183,8 @@ def polar_radius(matches: List[str]) -> List[str]:
 def extract_infobox_captain(matches: List[str]) -> List[str]:
 
 
-
     
-    return [extract_infobox_captain(" ".join(matches))]
+    return [get_extract_infobox_captain(matches[0])]
 
 
 
@@ -189,7 +204,7 @@ Action = Callable[[List[str]], List[Any]]
 pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
     ("what is the polar radius of %".split(), polar_radius),
-    ("Who is the captian of %".split(), vbteam_captain)
+    ("who is the captain of %".split(), extract_infobox_captain),
     (["bye"], bye_action)
 ]
 
