@@ -143,14 +143,23 @@ def get_extract_infobox_captain(wiki_text: str):
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(wiki_text)))
     print(infobox_text)
-    pattern = r"(?:Captain)(?P<name>\w+ \w+)League"
+    pattern = r"(?:Captain|Captain )(?P<name>\w+ \w+)League"
     error_text = (
         "Page infobox has no captain information"
     )
     match = get_match(infobox_text, pattern, error_text)
     return match.group("name")
     
-
+def get_extract_infobox_founded(wiki_text: str):
+    
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(wiki_text)))
+    print(infobox_text)
+    pattern = r"(?:Founded|Founded )(?P<year>\d+)"
+    error_text = (
+        "Page infobox has no founded year information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("name")
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
 # according to the action and the argument. It is important that each function returns a
@@ -186,7 +195,11 @@ def extract_infobox_captain(matches: List[str]) -> List[str]:
     
     return [get_extract_infobox_captain(matches[0])]
 
+def extract_infobox_founded(matches: List[str]) -> List[str]:
 
+
+    
+    return [get_extract_infobox_founded(matches[0])]
 
 
 # dummy argument is ignored and doesn't matter
@@ -205,6 +218,7 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
     ("what is the polar radius of %".split(), polar_radius),
     ("who is the captain of %".split(), extract_infobox_captain),
+    ("when was % founded".split(), extract_infobox_founded),
     (["bye"], bye_action)
 ]
 
